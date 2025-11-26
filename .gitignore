@@ -1,0 +1,99 @@
+# RPM build artifacts
+*.rpm
+*.src.rpm
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+
+# RPM build directories
+BUILD/
+BUILDROOT/
+RPMS/
+SOURCES/
+SPECS/
+SRPMS/
+
+# Mock build artifacts
+/var/lib/mock/
+*.log
+
+# Temporary files
+*.swp
+*.swo
+*~
+.*.sw?
+
+# Editor directories
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+.node_repl_history
+
+# Package build artifacts (keep pristine sources)
+quickshell-*/
+dms-*/
+DankMaterialShell-*/
+danklinux-master/
+dgop
+dgop.gz
+
+# Patch workspace
+/tmp/quickshell-patch*/
+
+# COPR artifacts
+.copr-build/
+results_*
+
+# Test files
+test.qml
+test*.qml
+memory-test.qml
+
+# Personal notes
+TODO.md
+NOTES.md
+.personal/

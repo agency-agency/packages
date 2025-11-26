@@ -1,0 +1,74 @@
+name: Check for QuickShell Updates
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    container:
+      image: 'registry.fedoraproject.org/fedora-minimal:latest'
+
+    steps:
+      - name: Prepare environment
+        run: |
+          microdnf -y install --nodocs --setopt=install_weak_deps=0 \
+            git-core rpm-build curl jq rpmdevtools sed
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check QuickShell updates
+        run: |
+          cd quickshell-webengine
+          
+          # Get latest QuickShell version
+          LATEST=$(curl -s "https://api.github.com/repos/quickshell-mirror/quickshell/releases/latest" | jq -r .tag_name | sed 's/^v//')
+          CURRENT=$(rpmspec -q --qf "%{version}\n" quickshell-webengine.spec | head -1)
+          
+          echo "Current version: $CURRENT"
+          echo "Latest version: $LATEST"
+          
+          if [ "$LATEST" != "$CURRENT" ] && [ "$LATEST" != "null" ] && [ -n "$LATEST" ]; then
+            echo "Update available: $LATEST"
+            
+            # Update version in spec file
+            sed -i "s/^Version:.*/Version:            $LATEST/" quickshell-webengine.spec
+            
+            # Update changelog
+            DATE=$(date +"%a %b %d %Y")
+            CHANGELOG_ENTRY="* $DATE Agency <maintainer@agency-agency.dev> - $LATEST-1\n- Update to QuickShell $LATEST\n- Rebuild with QtWebEngine support"
+            
+            sed -i "/%changelog/a $CHANGELOG_ENTRY" quickshell-webengine.spec
+            
+            # Commit and push
+            git add quickshell-webengine.spec
+            git commit -m "quickshell-webengine: Update to $LATEST [build-webengine]"
+            git push
+            
+            echo "Updated to version $LATEST"
+          else
+            echo "Already at latest version"
+          fi
+
+      - name: Push changes
+        run: |
+          if ! git diff --quiet HEAD origin/main 2>/dev/null && ! git diff --quiet HEAD origin/master 2>/dev/null; then
+            echo "Pushing updates..."
+            git push origin HEAD || git push origin main || git push origin master
+          else
+            echo "No updates to push"
+          fi
